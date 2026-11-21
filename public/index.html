@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediTrack — Smart Medicine Reminder & Senior Care</title>
+  <meta name="description" content="Senior-first smart medicine reminder, prescription reader, and daily caregiver adherence tracker powered by Google Gemini AI.">
+  
+  <!-- Senior-friendly Google Fonts: Atkinson Hyperlegible (crafted for low-vision) & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Senior accessibility base font scaler */
+      --base-font-size: 18px;
+
+      /* Warm Senior-Care Color Palette */
+      --color-canvas: #FDFBF7;
+      --color-card-bg: #FFFFFF;
+      --color-border: #E7E5E4;
+      --color-border-subtle: #F5F5F4;
+      
+      --color-primary: #0F766E;        /* Soothing clinical teal */
+      --color-primary-hover: #115E59;
+      --color-primary-light: #CCFBF1;
+
+      --color-morning-accent: #D97706; /* Warm Amber */
+      --color-morning-bg: #FEF3C7;
+      
+      --color-afternoon-accent: #EA580C; /* Sunset Orange */
+      --color-afternoon-bg: #FFEDD5;
+
+      --color-evening-accent: #7C3AED; /* Deep Violet */
+      --color-evening-bg: #EDE9FE;
+
+      --color-night-accent: #4338CA;   /* Soothing Indigo */
+      --color-night-bg: #EEF2FF;
+
+      --color-taken: #15803D;          /* Vibrant Emerald */
+      --color-taken-bg: #DCFCE7;
+      --color-taken-border: #86EFAC;
+
+      --color-danger: #B91C1C;
+      --color-danger-bg: #FEE2E2;
+
+      --color-text-main: #1C1917;     /* High-contrast Stone 900 */
+      --color-text-muted: #44403C;    /* Readable Stone 700 */
+      --color-text-light: #78716C;    /* Subtle Stone 500 */
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-pill: 9999px;
+
+      --shadow-sm: 0 2px 4px rgba(28, 25, 23, 0.04);
+      --shadow-md: 0 4px 12px rgba(28, 25, 23, 0.07);
+      --shadow-lg: 0 8px 24px rgba(28, 25, 23, 0.10);
+
+      --touch-min: 52px;
+    }
+
+    [data-text-size="large"] {
+      --base-font-size: 21px;
+    }
+
+    [data-text-size="xlarge"] {
+      --base-font-size: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
+      font-size: var(--base-font-size);
+      line-height: 1.55;
+      color: var(--color-text-main);
+      background-color: var(--color-canvas);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--color-text-main);
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      font-size: inherit;
+    }
+
+    /* Focus indicator for high accessibility */
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid var(--color-primary);
+      outline-offset: 3px;
+    }
+
+    /* Top Accessibility & Navigation Bar */
+    .top-bar {
+      background-color: #FFFFFF;
+      border-bottom: 2px solid var(--color-border);
+      padding: 0.85rem 1.25rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .top-bar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--color-primary), #0D9488);
+      color: #FFFFFF;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(15, 118, 110, 0.25);
+    }
+
+    .brand-title {
+      font-size: 1.45rem;
+      letter-spacing: -0.02em;
+      color: var(--color-text-main);
+    }
+
+    .brand-tagline {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      font-weight: 500;
+    }
+
+    .top-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Segmented font size controls */
+    .text-size-control {
+      display: flex;
+      background: var(--color-border-subtle);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-pill);
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .text-size-btn {
+      background: transparent;
+      border: none;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-pill);
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      min-height: 40px;
+      min-width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .text-size-btn[aria-pressed="true"] {
+      background: var(--color-primary);
+      color: #FFFFFF;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-top {
+      min-height: var(--touch-min);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--color-border);
+      background: #FFFFFF;
+      color: var(--color-text-main);
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .btn-top:hover {
+      background: var(--color-border-subtle);
+    }
+
+    .btn-top.active-speaking {
+      background: #FEF08A;
+      border-color: #CA8A04;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    /* Main Container */
+    .app-main {
+      max-width: 1200px;
+      width: 100%;
+      margin: 1.5rem auto;
+      padding: 0 1.25rem 3rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+      flex: 1;
+    }
+
+    /* Dose Alarm Banner */
+    .alarm-banner {
+      display: none;
+      background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+      border: 3px solid #D97706;
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      box-shadow: var(--shadow-md);
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .alarm-banner.active {
+      display: flex;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .alarm-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .alarm-icon {
+      font-size: 2.2rem;
+      animation: ring 1s infinite;
+    }
+
+    @keyframes ring {
+      0%, 100% { transform: rotate(0); }
+      20%, 60% { transform: rotate(15deg); }
+      40%, 80% { transform: rotate(-15deg); }
+    }
+
+    .alarm-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #92400E;
+    }
+
+    .alarm-text {
+      color: #78350F;
+      font-size: 1rem;
+    }
+
+    .btn-dismiss-alarm {
+      min-height: 48px;
+      padding: 0.5rem 1.25rem;
+      background: #B45309;
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Overview & Adherence Progress Section */
+    .hero-card {
+      background: var(--color-card-bg);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 1.75rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .hero-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+
+    .hero-date {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+
+    .adherence-bar-container {
+      background: #E7E5E4;
+      border-radius: var(--radius-pill);
+      height: 24px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .adherence-bar-fill {
+      background: linear-gradient(90deg, #10B981, #059669);
+      height: 100%;
+      width: 0%;
+      border-radius: var(--radius-pill);
+      transition: width 0.4s ease-in-out;
+    }
+
+    .adherence-stats {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+    }
+
+    .badge-adherence {
+      background: var(--color-taken-bg);
+      color: var(--color-taken);
+      border: 2px solid var(--color-taken-border);
+      padding: 0.35rem 0.85rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.95rem;
+    }
+
+    /* Timeline Section */
+    .timeline-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .section-title-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--color-border);
+      padding-bottom: 0.75rem;
+    }
+
+    .time-slot-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .time-slot-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+    }
+
+    .time-slot-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: var(--radius-pill);
+      font-weight: 800;
+      font-size: 1.1rem;
+      border: 2px solid transparent;
+    }
+
+    .slot-morning .time-slot-badge {
+      background: var(--color-morning-bg);
+      color: var(--color-morning-accent);
+      border-color: #FDE68A;
+    }
+
+    .slot-afternoon .time-slot-badge {
+      background: var(--color-afternoon-bg);
+      color: var(--color-afternoon-accent);
+      border-color: #FED7AA;
+    }
+
+    .slot-evening .time-slot-badge {
+      background: var(--color-evening-bg);
+      color: var(--color-evening-accent);
+      border-color: #DDD6FE;
+    }
+
+    .slot-night .time-slot-badge {
+      background: var(--color-night-bg);
+      color: var(--color-night-accent);
+      border-color: #C7D2FE;
+    }
+
+    .medicine-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+
+    /* Senior-Care Medicine Card */
+    .med-card {
+      background: var(--color-card-bg);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.35rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1rem;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .med-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: #D6D3D1;
+    }
+
+    .med-card.is-taken {
+      background: #F0FDF4;
+      border: 2px solid var(--color-taken-border);
+      box-shadow: 0 2px 8px rgba(21, 128, 61, 0.12);
+    }
+
+    .med-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .med-name {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--color-text-main);
+      word-break: break-word;
+    }
+
+    .med-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.35rem;
+    }
+
+    .badge-dose {
+      background: #F5F5F4;
+      color: var(--color-text-main);
+      border: 1px solid #D6D3D1;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-pill);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .badge-time {
+      background: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FDE68A;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-pill);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .badge-food {
+      background: #E0F2FE;
+      color: #0369A1;
+      border: 1px solid #BAE6FD;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-pill);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .med-purpose {
+      background: #FBFBFA;
+      border-left: 4px solid var(--color-primary);
+      padding: 0.6rem 0.85rem;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 0.95rem;
+      color: var(--color-text-muted);
+    }
+
+    .med-precaution {
+      font-size: 0.88rem;
+      color: #B45309;
+      background: #FFFBEB;
+      padding: 0.4rem 0.65rem;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+
+    .med-card-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      margin-top: 0.25rem;
+    }
+
+    /* Huge Accessible "Mark as Taken" Button */
+    .btn-taken-toggle {
+      flex: 1;
+      min-height: var(--touch-min);
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius-md);
+      font-size: 1.05rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      border: 2px solid var(--color-primary);
+      background: var(--color-primary);
+      color: #FFFFFF;
+      transition: all 0.15s ease;
+    }
+
+    .btn-taken-toggle:hover {
+      background: var(--color-primary-hover);
+    }
+
+    .med-card.is-taken .btn-taken-toggle {
+      background: #DCFCE7;
+      color: var(--color-taken);
+      border-color: var(--color-taken);
+    }
+
+    .med-card.is-taken .btn-taken-toggle:hover {
+      background: #BBF7D0;
+    }
+
+    .btn-delete-med {
+      min-height: var(--touch-min);
+      min-width: var(--touch-min);
+      background: transparent;
+      border: 2px solid var(--color-border);
+      color: var(--color-text-light);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      transition: all 0.15s;
+    }
+
+    .btn-delete-med:hover {
+      background: var(--color-danger-bg);
+      color: var(--color-danger);
+      border-color: #FCA5A5;
+    }
+
+    /* Two Column Layout for Scanner & Caregiver Panel */
+    .grid-two-col {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+    }
+
+    @media (min-width: 900px) {
+      .grid-two-col {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .panel-card {
+      background: var(--color-card-bg);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.3rem;
+    }
+
+    /* AI Prescription & Voice Scanner */
+    .drop-zone {
+      border: 2px dashed #CBD5E1;
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      text-align: center;
+      background: #F8FAFC;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--color-primary);
+      background: #F0FDFA;
+    }
+
+    .preview-box {
+      display: none;
+      margin-top: 0.75rem;
+      position: relative;
+      text-align: center;
+    }
+
+    .preview-box img {
+      max-height: 180px;
+      max-width: 100%;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--color-border);
+    }
+
+    .btn-remove-preview {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .voice-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-mic {
+      min-height: var(--touch-min);
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius-md);
+      background: #FEF3C7;
+      border: 2px solid #FDE68A;
+      color: #92400E;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-mic.listening {
+      background: #FEE2E2;
+      border-color: #F87171;
+      color: #991B1B;
+      animation: pulse 1s infinite;
+    }
+
+    .textarea-notes {
+      width: 100%;
+      min-height: 90px;
+      padding: 0.75rem;
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: #FAFAF9;
+      resize: vertical;
+    }
+
+    .btn-primary-action {
+      min-height: var(--touch-min);
+      background: var(--color-primary);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: background 0.15s;
+    }
+
+    .btn-primary-action:hover {
+      background: var(--color-primary-hover);
+    }
+
+    .btn-primary-action:disabled {
+      background: #A8A29E;
+      cursor: not-allowed;
+    }
+
+    /* Accordion for manual add */
+    details.manual-add-details {
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: #FFFFFF;
+      padding: 0.6rem 1rem;
+    }
+
+    details.manual-add-details summary {
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0.4rem 0;
+      color: var(--color-primary);
+      user-select: none;
+    }
+
+    .manual-form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      padding-top: 1rem;
+    }
+
+    @media (min-width: 600px) {
+      .manual-form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .form-group label {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+    }
+
+    .form-control {
+      min-height: 48px;
+      padding: 0.5rem 0.75rem;
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      background: #FFFFFF;
+    }
+
+    /* Caregiver & Safety Output */
+    .caregiver-box {
+      background: #F8FAFC;
+      border: 2px solid #E2E8F0;
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .caregiver-status-pill {
+      display: inline-block;
+      align-self: flex-start;
+      padding: 0.35rem 0.85rem;
+      border-radius: var(--radius-pill);
+      font-weight: 800;
+      font-size: 0.95rem;
+      background: #DCFCE7;
+      color: var(--color-taken);
+      border: 1px solid var(--color-taken-border);
+    }
+
+    .caregiver-advice-list {
+      padding-left: 1.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .btn-caregiver-action {
+      min-height: var(--touch-min);
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      border: 2px solid var(--color-border);
+      background: #FFFFFF;
+      transition: background 0.15s;
+    }
+
+    .btn-caregiver-action:hover {
+      background: var(--color-border-subtle);
+    }
+
+    .btn-whatsapp {
+      background: #25D366;
+      color: #FFFFFF;
+      border: none;
+    }
+
+    .btn-whatsapp:hover {
+      background: #20BD5A;
+    }
+
+    /* Toast Notification */
+    .toast-pill {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1C1917;
+      color: #FFFFFF;
+      padding: 0.85rem 1.4rem;
+      border-radius: var(--radius-pill);
+      box-shadow: var(--shadow-lg);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.25s ease-in-out;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .toast-pill.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Loading overlay */
+    .loading-state {
+      display: none;
+      text-align: center;
+      padding: 1.5rem;
+      background: #F0FDFA;
+      border-radius: var(--radius-md);
+      border: 2px solid #99F6E4;
+      color: #0F766E;
+      font-weight: 700;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border: 4px solid #99F6E4;
+      border-top-color: #0F766E;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 0.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Screen reader announcement container */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Footer */
+    .app-footer {
+      border-top: 2px solid var(--color-border);
+      background: #FFFFFF;
+      padding: 1.5rem 1.25rem;
+      margin-top: auto;
+      text-align: center;
+      font-size: 0.95rem;
+      color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body data-text-size="normal">
+  <!-- ARIA Live region for screen readers -->
+  <div id="srAnnouncement" class="sr-only" aria-live="polite"></div>
+
+  <!-- Accessible Header & Control Bar -->
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand-group">
+        <div class="brand-icon" aria-hidden="true">💊</div>
+        <div>
+          <h1 class="brand-title">MediTrack</h1>
+          <p class="brand-tagline">Smart Senior Medicine Reminder & Daily Care</p>
+        </div>
+      </div>
+
+      <nav class="top-controls" aria-label="Senior Accessibility Controls">
+        <!-- Text Size Scaler -->
+        <div class="text-size-control" role="group" aria-label="Adjust text size for easy reading">
+          <button type="button" class="text-size-btn" id="btnFontNormal" aria-pressed="true" title="Standard Text (18px)">A</button>
+          <button type="button" class="text-size-btn" id="btnFontLarge" aria-pressed="false" title="Large Text (21px)">A+</button>
+          <button type="button" class="text-size-btn" id="btnFontXLarge" aria-pressed="false" title="Extra Large Text (24px)">A++</button>
+        </div>
+
+        <!-- Read Schedule Aloud Button (TTS) -->
+        <button type="button" class="btn-top" id="btnReadSchedule" aria-label="Read today's schedule aloud">
+          <span aria-hidden="true">🔊</span>
+          <span id="readScheduleText">Read Schedule Aloud</span>
+        </button>
+
+        <!-- Test Dose Alarm Button -->
+        <button type="button" class="btn-top" id="btnTestAlarm" aria-label="Test audible dose alarm chime">
+          <span aria-hidden="true">🔔</span>
+          <span>Test Dose Alarm</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="app-main">
+
+    <!-- Active Medicine Dose Alert Banner (shown when a scheduled dose arrives) -->
+    <aside id="doseAlarmBanner" class="alarm-banner" role="alert" aria-live="assertive">
+      <div class="alarm-content">
+        <div class="alarm-icon" aria-hidden="true">⏰</div>
+        <div>
+          <div class="alarm-title" id="alarmBannerTitle">Medicine Time!</div>
+          <div class="alarm-text" id="alarmBannerText">It is time for your scheduled medicine dose.</div>
+        </div>
+      </div>
+      <button type="button" class="btn-dismiss-alarm" id="btnDismissAlarm">I Took It / Dismiss</button>
+    </aside>
+
+    <!-- Daily Progress & Adherence Section -->
+    <section class="hero-card" aria-labelledby="todayOverviewTitle">
+      <div class="hero-header">
+        <div>
+          <h2 id="todayOverviewTitle" style="font-size: 1.5rem;">Today's Medicine Schedule</h2>
+          <p id="todayDateStr" class="hero-date">Loading today's date...</p>
+        </div>
+        <div class="badge-adherence" id="adherenceBadge">0 of 0 Taken Today</div>
+      </div>
+
+      <div>
+        <div class="adherence-bar-container" role="progressbar" id="adherenceProgressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Daily Medicine Adherence Percentage">
+          <div class="adherence-bar-fill" id="adherenceBarFill"></div>
+        </div>
+        <div class="adherence-stats" style="margin-top: 0.5rem;">
+          <span id="adherencePercentageText">0% Complete</span>
+          <span id="adherencePendingText" style="color: var(--color-text-muted); font-weight: normal;">0 doses remaining</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Grouped Daily Timeline (Morning, Afternoon, Evening, Night) -->
+    <section class="timeline-section" aria-labelledby="timelineHeading">
+      <div class="section-title-wrap">
+        <h2 id="timelineHeading" style="font-size: 1.4rem;">Daily Schedule Timeline</h2>
+        <button type="button" id="btnResetDemo" style="background: none; border: none; color: var(--color-primary); font-weight: 700; cursor: pointer; text-decoration: underline;">
+          Reset Demo Schedule
+        </button>
+      </div>
+
+      <!-- Morning Slot -->
+      <div class="time-slot-group slot-morning" id="groupMorning">
+        <div class="time-slot-header">
+          <span class="time-slot-badge">🌅 Morning (Around 08:00 AM)</span>
+        </div>
+        <div class="medicine-cards-grid" id="gridMorning"></div>
+      </div>
+
+      <!-- Afternoon Slot -->
+      <div class="time-slot-group slot-afternoon" id="groupAfternoon">
+        <div class="time-slot-header">
+          <span class="time-slot-badge">☀️ Afternoon (Around 01:00 PM)</span>
+        </div>
+        <div class="medicine-cards-grid" id="gridAfternoon"></div>
+      </div>
+
+      <!-- Evening Slot -->
+      <div class="time-slot-group slot-evening" id="groupEvening">
+        <div class="time-slot-header">
+          <span class="time-slot-badge">🌆 Evening (Around 07:00 PM)</span>
+        </div>
+        <div class="medicine-cards-grid" id="gridEvening"></div>
+      </div>
+
+      <!-- Night Slot -->
+      <div class="time-slot-group slot-night" id="groupNight">
+        <div class="time-slot-header">
+          <span class="time-slot-badge">🌙 Night (Around 10:00 PM)</span>
+        </div>
+        <div class="medicine-cards-grid" id="gridNight"></div>
+      </div>
+    </section>
+
+    <!-- Two-Column Grid: AI Multimodal Scanner + Caregiver & Safety Summary -->
+    <div class="grid-two-col">
+      
+      <!-- Panel 1: Smart AI Prescription & Voice Scanner -->
+      <section class="panel-card" aria-labelledby="scannerHeading">
+        <h2 id="scannerHeading" class="panel-title">
+          <span aria-hidden="true">📷</span>
+          <span>Smart AI Prescription & Voice Scanner</span>
+        </h2>
+        <p style="color: var(--color-text-muted);">
+          Take a photo of your prescription or medicine box, or tap the microphone to speak your medicine instructions. Powered live by Google Gemini.
+        </p>
+
+        <!-- Camera / File Drop Zone -->
+        <label for="prescriptionImage" class="drop-zone" id="dropZone">
+          <div style="font-size: 2rem; margin-bottom: 0.25rem;">📸</div>
+          <div style="font-weight: 700;">Take a Photo or Select Picture</div>
+          <div style="font-size: 0.85rem; color: var(--color-text-light);">Supports JPG, PNG, WEBP up to 5MB</div>
+          <input type="file" id="prescriptionImage" accept="image/*" capture="environment" style="display: none;">
+        </label>
+
+        <!-- Image Preview Box -->
+        <div id="imagePreviewBox" class="preview-box">
+          <img id="imagePreview" alt="Prescription preview">
+          <button type="button" id="btnRemoveImage" class="btn-remove-preview" title="Remove photo">✕ Remove</button>
+        </div>
+
+        <!-- Voice Input & Notes -->
+        <div class="voice-group">
+          <button type="button" id="btnVoiceInput" class="btn-mic" aria-label="Speak your medicines using microphone">
+            <span aria-hidden="true">🎙️</span>
+            <span id="voiceBtnText">Tap to Speak</span>
+          </button>
+          <span id="voiceStatusText" style="font-size: 0.9rem; color: var(--color-text-muted);">Voice input ready</span>
+        </div>
+
+        <div class="form-group">
+          <label for="prescriptionNotes">Spoken or Typed Medicine Notes:</label>
+          <textarea id="prescriptionNotes" class="textarea-notes" placeholder="e.g. Doctor said take Metformin 500mg twice a day after meals, and Blood pressure pill in the morning before food..."></textarea>
+        </div>
+
+        <!-- AI Analyze Action Button -->
+        <button type="button" class="btn-primary-action" id="btnAnalyzePrescription">
+          <span aria-hidden="true">✨</span>
+          <span>Analyze & Add to Schedule with Gemini AI</span>
+        </button>
+
+        <!-- Loading Indicator -->
+        <div id="scanLoading" class="loading-state">
+          <div class="loading-spinner" aria-hidden="true"></div>
+          <div id="scanLoadingText">Scanning with Google Gemini AI...</div>
+        </div>
+
+        <!-- Quick Manual Add Accordion -->
+        <details class="manual-add-details">
+          <summary>➕ Or Add Medicine Manually (Quick Form)</summary>
+          <form id="manualAddForm" class="manual-form-grid" onsubmit="event.preventDefault(); handleManualAdd();">
+            <div class="form-group">
+              <label for="manualName">Medicine Name *</label>
+              <input type="text" id="manualName" class="form-control" placeholder="e.g. Amlodipine" required>
+            </div>
+            <div class="form-group">
+              <label for="manualDosage">Dosage *</label>
+              <input type="text" id="manualDosage" class="form-control" placeholder="e.g. 5mg (1 tablet)" required>
+            </div>
+            <div class="form-group">
+              <label for="manualSlot">Time Slot *</label>
+              <select id="manualSlot" class="form-control" required>
+                <option value="Morning">Morning</option>
+                <option value="Afternoon">Afternoon</option>
+                <option value="Evening">Evening</option>
+                <option value="Night">Night</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="manualTime">Exact Time *</label>
+              <input type="text" id="manualTime" class="form-control" placeholder="e.g. 08:00 AM" required>
+            </div>
+            <div class="form-group">
+              <label for="manualFood">Food Instruction *</label>
+              <select id="manualFood" class="form-control" required>
+                <option value="After Food">After Food</option>
+                <option value="Before Food">Before Food</option>
+                <option value="With Water">With Water</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="manualPurpose">Plain Purpose</label>
+              <input type="text" id="manualPurpose" class="form-control" placeholder="e.g. Keeps blood pressure normal">
+            </div>
+            <div style="grid-column: 1 / -1; margin-top: 0.5rem;">
+              <button type="submit" class="btn-primary-action" style="width: 100%;">Add Medicine to Schedule</button>
+            </div>
+          </form>
+        </details>
+      </section>
+
+      <!-- Panel 2: Caregiver & Safety Summary Panel -->
+      <section class="panel-card" aria-labelledby="caregiverHeading">
+        <h2 id="caregiverHeading" class="panel-title">
+          <span aria-hidden="true">🛡️</span>
+          <span>Caregiver & Safety Summary Panel</span>
+        </h2>
+        <p style="color: var(--color-text-muted);">
+          Evaluate interaction safety, food timing alignment, and copy a formatted daily status report for family members or caregivers.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+          <button type="button" class="btn-caregiver-action" id="btnRunCareCheck" style="border-color: var(--color-primary); color: var(--color-primary);">
+            <span aria-hidden="true">🩺</span>
+            <span>Run AI Safety & Timing Check</span>
+          </button>
+          
+          <button type="button" class="btn-caregiver-action btn-whatsapp" id="btnCopyWhatsApp">
+            <span aria-hidden="true">📋</span>
+            <span>Copy Caregiver WhatsApp Report</span>
+          </button>
+        </div>
+
+        <div id="careCheckLoading" class="loading-state">
+          <div class="loading-spinner" aria-hidden="true"></div>
+          <div>Reviewing schedule with Google Gemini Clinical AI...</div>
+        </div>
+
+        <div class="caregiver-box" id="caregiverBox">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="caregiver-status-pill" id="caregiverStatusPill">Schedule Status: Healthy</span>
+            <button type="button" id="btnPlaySpokenSummary" style="background: none; border: none; color: var(--color-primary); font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+              <span aria-hidden="true">🔊</span>
+              <span>Hear Summary</span>
+            </button>
+          </div>
+
+          <div>
+            <strong style="display: block; margin-bottom: 0.35rem;">AI Safety Guidelines:</strong>
+            <ul class="caregiver-advice-list" id="caregiverAdviceList">
+              <li>Keep medicines stored in a cool, dry place away from direct sunlight.</li>
+              <li>Always take Morning and Evening doses with a full cup of fresh water.</li>
+              <li>If you feel dizzy or notice any side effects, immediately inform your caregiver or doctor.</li>
+            </ul>
+          </div>
+
+          <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.75rem;">
+            <strong style="display: block; font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 0.25rem;">Spoken Patient Briefing:</strong>
+            <p id="caregiverSpokenSummary" style="font-size: 0.95rem; font-style: italic; color: var(--color-text-main);">
+              "Good day! You have medicines scheduled for morning, afternoon, evening, and night. Remember to take your doses with meals and plenty of water."
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- High-contrast Toast Notification -->
+  <div id="toastNotification" class="toast-pill" role="status" aria-live="polite">
+    <span id="toastIcon">✅</span>
+    <span id="toastMessage">Action completed successfully</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p><strong>MediTrack</strong> — Smart Medicine Reminder & Accessibility Console · Powered by Google Gemini AI</p>
+    <p style="font-size: 0.85rem; margin-top: 0.25rem;">Designed for elderly independence, family peace of mind, and WCAG AA+ accessibility standards.</p>
+  </footer>
+
+  <!-- Application Script -->
+  <script>
+    // State management and local storage keys
+    const STORAGE_KEY_MEDS = 'meditrack_medicines_v2';
+    const STORAGE_KEY_TAKEN = 'meditrack_taken_today_v2';
+    const STORAGE_KEY_DATE = 'meditrack_date_v2';
+
+    // Default starter schedule for initial out-of-the-box demonstration
+    const DEFAULT_MEDICINES = [
+      {
+        id: 'med-1',
+        name: 'Amlodipine (Blood Pressure)',
+        dosage: '5mg (1 Tablet)',
+        timeSlot: 'Morning',
+        exactTime: '08:00 AM',
+        foodInstruction: 'Before Food',
+        plainPurpose: 'Helps relax your blood vessels to keep your blood pressure steady and gentle.',
+        precautionTip: 'Take with a glass of water when you first wake up.'
+      },
+      {
+        id: 'med-2',
+        name: 'Metformin (Blood Sugar)',
+        dosage: '500mg (1 Tablet)',
+        timeSlot: 'Morning',
+        exactTime: '08:30 AM',
+        foodInstruction: 'After Food',
+        plainPurpose: 'Helps your body naturally balance your blood sugar after breakfast.',
+        precautionTip: 'Always take with or immediately after food to protect your stomach.'
+      },
+      {
+        id: 'med-3',
+        name: 'Calcium & Vitamin D3',
+        dosage: '500mg/400IU (1 Tablet)',
+        timeSlot: 'Afternoon',
+        exactTime: '01:00 PM',
+        foodInstruction: 'After Food',
+        plainPurpose: 'Nourishes and strengthens your bones and joints.',
+        precautionTip: 'Best absorbed with your lunchtime meal.'
+      },
+      {
+        id: 'med-4',
+        name: 'Atorvastatin (Cholesterol)',
+        dosage: '10mg (1 Tablet)',
+        timeSlot: 'Night',
+        exactTime: '10:00 PM',
+        foodInstruction: 'With Water',
+        plainPurpose: 'Protects your heart and blood vessels while you rest at night.',
+        precautionTip: 'Take before sleep. Avoid grapefruit juice.'
+      }
+    ];
+
+    let medicines = [];
+    let takenMap = {}; // { [medId]: 'HH:MM AM' }
+    let selectedImageFile = null;
+    let speechRecognition = null;
+    let isListening = false;
+    let isSpeaking = false;
+    let alarmCheckInterval = null;
+
+    // Web Audio API Synthesizer Chime
+    function playGentleChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+
+        // Note 1: C5 (523.25 Hz)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(523.25, ctx.currentTime);
+        gain1.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(ctx.currentTime);
+        osc1.stop(ctx.currentTime + 0.6);
+
+        // Note 2: E5 (659.25 Hz)
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.22);
+        gain2.gain.setValueAtTime(0.35, ctx.currentTime + 0.22);
+        gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.85);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(ctx.currentTime + 0.22);
+        osc2.stop(ctx.currentTime + 0.85);
+      } catch (err) {
+        console.warn('AudioContext playback error:', err);
+      }
+    }
+
+    // Accessible Toast Notification
+    function showToast(message, icon = '✅') {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastIcon').textContent = icon;
+      document.getElementById('toastMessage').textContent = message;
+      toast.classList.add('show');
+      announceSR(message);
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3500);
+    }
+
+    // Screen reader announcer
+    function announceSR(text) {
+      const el = document.getElementById('srAnnouncement');
+      if (el) el.textContent = text;
+    }
+
+    // Load state from localStorage
+    function loadState() {
+      const todayStr = new Date().toDateString();
+      const storedDate = localStorage.getItem(STORAGE_KEY_DATE);
+
+      // Reset daily taken flags if day rolled over
+      if (storedDate !== todayStr) {
+        localStorage.setItem(STORAGE_KEY_DATE, todayStr);
+        localStorage.setItem(STORAGE_KEY_TAKEN, JSON.stringify({}));
+        takenMap = {};
+      } else {
+        try {
+          takenMap = JSON.parse(localStorage.getItem(STORAGE_KEY_TAKEN) || '{}');
+        } catch {
+          takenMap = {};
+        }
+      }
+
+      // Load medicines
+      try {
+        const storedMeds = localStorage.getItem(STORAGE_KEY_MEDS);
+        if (storedMeds) {
+          medicines = JSON.parse(storedMeds);
+        } else {
+          medicines = [...DEFAULT_MEDICINES];
+          saveMedicines();
+        }
+      } catch {
+        medicines = [...DEFAULT_MEDICINES];
+        saveMedicines();
+      }
+    }
+
+    function saveMedicines() {
+      localStorage.setItem(STORAGE_KEY_MEDS, JSON.stringify(medicines));
+    }
+
+    function saveTaken() {
+      localStorage.setItem(STORAGE_KEY_TAKEN, JSON.stringify(takenMap));
+    }
+
+    // Render Timeline & Adherence
+    function renderApp() {
+      renderDateHeader();
+      renderTimeline();
+      renderAdherence();
+    }
+
+    function renderDateHeader() {
+      const now = new Date();
+      const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+      document.getElementById('todayDateStr').textContent = now.toLocaleDateString(undefined, options);
+    }
+
+    function renderAdherence() {
+      const total = medicines.length;
+      let takenCount = 0;
+      medicines.forEach(m => {
+        if (takenMap[m.id]) takenCount++;
+      });
+
+      const percent = total > 0 ? Math.round((takenCount / total) * 100) : 0;
+      const pendingCount = total - takenCount;
+
+      document.getElementById('adherenceBadge').textContent = `${takenCount} of ${total} Taken Today`;
+      document.getElementById('adherenceBarFill').style.width = `${percent}%`;
+      document.getElementById('adherenceProgressBar').setAttribute('aria-valuenow', percent);
+      document.getElementById('adherencePercentageText').textContent = `${percent}% Complete`;
+      document.getElementById('adherencePendingText').textContent = 
+        pendingCount === 0 ? '🎉 All medicines taken for today!' : `${pendingCount} dose${pendingCount > 1 ? 's' : ''} remaining`;
+    }
+
+    function renderTimeline() {
+      const slots = ['Morning', 'Afternoon', 'Evening', 'Night'];
+      const containers = {
+        Morning: document.getElementById('gridMorning'),
+        Afternoon: document.getElementById('gridAfternoon'),
+        Evening: document.getElementById('gridEvening'),
+        Night: document.getElementById('gridNight')
+      };
+
+      // Clear containers
+      slots.forEach(s => {
+        containers[s].innerHTML = '';
+      });
+
+      const slotCounts = { Morning: 0, Afternoon: 0, Evening: 0, Night: 0 };
+
+      medicines.forEach(med => {
+        const slot = med.timeSlot || 'Morning';
+        const targetGrid = containers[slot] || containers.Morning;
+        slotCounts[slot] = (slotCounts[slot] || 0) + 1;
+
+        const isTaken = Boolean(takenMap[med.id]);
+        const takenTime = takenMap[med.id] || '';
+
+        const card = document.createElement('article');
+        card.className = `med-card ${isTaken ? 'is-taken' : ''}`;
+        card.setAttribute('aria-label', `${med.name}, ${med.dosage}, scheduled for ${med.exactTime}`);
+
+        card.innerHTML = `
+          <div>
+            <div class="med-card-header">
+              <h3 class="med-name">${escapeHtml(med.name)}</h3>
+            </div>
+            <div class="med-badges">
+              <span class="badge-dose">💊 ${escapeHtml(med.dosage)}</span>
+              <span class="badge-time">⏰ ${escapeHtml(med.exactTime)}</span>
+              <span class="badge-food">${getFoodEmoji(med.foodInstruction)} ${escapeHtml(med.foodInstruction)}</span>
+            </div>
+          </div>
+
+          <div class="med-purpose">
+            <strong>Why I take this:</strong> ${escapeHtml(med.plainPurpose || 'Prescribed for daily health.')}
+          </div>
+
+          ${med.precautionTip ? `
+            <div class="med-precaution">
+              <span aria-hidden="true">⚠️</span>
+              <span><strong>Note:</strong> ${escapeHtml(med.precautionTip)}</span>
+            </div>
+          ` : ''}
+
+          <div class="med-card-actions">
+            <button type="button" class="btn-taken-toggle" onclick="toggleTaken('${med.id}')" aria-pressed="${isTaken}">
+              <span>${isTaken ? '✓ Taken' : '○ Mark as Taken'}</span>
+              ${isTaken ? `<span style="font-size: 0.85rem; font-weight: normal;">(${escapeHtml(takenTime)})</span>` : ''}
+            </button>
+            <button type="button" class="btn-delete-med" onclick="deleteMedicine('${med.id}')" title="Delete ${escapeHtml(med.name)}" aria-label="Delete ${escapeHtml(med.name)}">
+              🗑️
+            </button>
+          </div>
+        `;
+
+        targetGrid.appendChild(card);
+      });
+
+      // Show friendly empty message for slots with no medicines
+      slots.forEach(slot => {
+        if (slotCounts[slot] === 0) {
+          containers[slot].innerHTML = `
+            <p style="color: var(--color-text-light); font-style: italic; padding: 0.5rem 0;">
+              No medicines scheduled for ${slot.toLowerCase()}.
+            </p>
+          `;
+        }
+      });
+    }
+
+    function getFoodEmoji(instruction) {
+      if (!instruction) return '🍽️';
+      if (instruction.includes('Before')) return '🥗';
+      if (instruction.includes('Water')) return '💧';
+      return '🍽️';
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Toggle Taken State
+    window.toggleTaken = function(id) {
+      const med = medicines.find(m => m.id === id);
+      if (!med) return;
+
+      if (takenMap[id]) {
+        delete takenMap[id];
+        showToast(`Marked ${med.name} as pending`);
+      } else {
+        const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        takenMap[id] = timeNow;
+        playGentleChime();
+        showToast(`Marked ${med.name} as taken at ${timeNow}!`);
+      }
+      saveTaken();
+      renderApp();
+    };
+
+    // Delete Medicine
+    window.deleteMedicine = function(id) {
+      const med = medicines.find(m => m.id === id);
+      const name = med ? med.name : 'this medicine';
+      if (confirm(`Are you sure you want to remove ${name} from your schedule?`)) {
+        medicines = medicines.filter(m => m.id !== id);
+        delete takenMap[id];
+        saveMedicines();
+        saveTaken();
+        renderApp();
+        showToast(`Removed ${name}`);
+      }
+    };
+
+    // Reset Demo Schedule
+    document.getElementById('btnResetDemo').addEventListener('click', () => {
+      if (confirm('Reset your schedule to the recommended demonstration medicines?')) {
+        medicines = [...DEFAULT_MEDICINES];
+        takenMap = {};
+        saveMedicines();
+        saveTaken();
+        renderApp();
+        showToast('Demo schedule restored');
+      }
+    });
+
+    // Senior Text Size Scaler (Normal 18px -> Large 21px -> Extra-Large 24px)
+    const btnNormal = document.getElementById('btnFontNormal');
+    const btnLarge = document.getElementById('btnFontLarge');
+    const btnXLarge = document.getElementById('btnFontXLarge');
+
+    function setTextSize(size) {
+      document.body.setAttribute('data-text-size', size);
+      btnNormal.setAttribute('aria-pressed', size === 'normal');
+      btnLarge.setAttribute('aria-pressed', size === 'large');
+      btnXLarge.setAttribute('aria-pressed', size === 'xlarge');
+      localStorage.setItem('meditrack_text_size', size);
+      showToast(`Text size adjusted to ${size.toUpperCase()}`);
+    }
+
+    btnNormal.addEventListener('click', () => setTextSize('normal'));
+    btnLarge.addEventListener('click', () => setTextSize('large'));
+    btnXLarge.addEventListener('click', () => setTextSize('xlarge'));
+
+    // Restore saved text size preference
+    const savedTextSize = localStorage.getItem('meditrack_text_size');
+    if (savedTextSize) {
+      setTextSize(savedTextSize);
+    }
+
+    // TTS: Read Today's Schedule Aloud
+    const btnReadSchedule = document.getElementById('btnReadSchedule');
+    const readScheduleText = document.getElementById('readScheduleText');
+
+    function readScheduleAloud() {
+      if (!('speechSynthesis' in window)) {
+        showToast('Text-to-speech is not supported on this browser.', '⚠️');
+        return;
+      }
+
+      if (isSpeaking) {
+        window.speechSynthesis.cancel();
+        isSpeaking = false;
+        btnReadSchedule.classList.remove('active-speaking');
+        readScheduleText.textContent = 'Read Schedule Aloud';
+        return;
+      }
+
+      const total = medicines.length;
+      if (total === 0) {
+        speakText("You currently have no medicines scheduled for today. Have a wonderful and healthy day!");
+        return;
+      }
+
+      let takenCount = 0;
+      medicines.forEach(m => { if (takenMap[m.id]) takenCount++; });
+      const pendingMeds = medicines.filter(m => !takenMap[m.id]);
+
+      let script = `Good day! Here is your medicine schedule for today. `;
+      script += `You have ${total} total medicines. `;
+      if (takenCount > 0) {
+        script += `You have already taken ${takenCount} of them. `;
+      }
+
+      if (pendingMeds.length === 0) {
+        script += `Congratulations! All of your scheduled medicines for today have been taken. `;
+      } else {
+        script += `You have ${pendingMeds.length} pending doses remaining. `;
+        pendingMeds.forEach((m, idx) => {
+          script += `Dose ${idx + 1}: ${m.name}, ${m.dosage}, scheduled for ${m.timeSlot} at ${m.exactTime}, ${m.foodInstruction}. Purpose: ${m.plainPurpose || 'Prescribed daily'}. `;
+        });
+      }
+
+      speakText(script);
+    }
+
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9; // Slightly slower, clearer tempo for elderly listeners
+      utterance.pitch = 1.0;
+
+      utterance.onstart = () => {
+        isSpeaking = true;
+        btnReadSchedule.classList.add('active-speaking');
+        readScheduleText.textContent = 'Stop Audio';
+      };
+
+      utterance.onend = utterance.onerror = () => {
+        isSpeaking = false;
+        btnReadSchedule.classList.remove('active-speaking');
+        readScheduleText.textContent = 'Read Schedule Aloud';
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    btnReadSchedule.addEventListener('click', readScheduleAloud);
+
+    // Test Dose Alarm & Banner
+    const btnTestAlarm = document.getElementById('btnTestAlarm');
+    const doseAlarmBanner = document.getElementById('doseAlarmBanner');
+    const alarmBannerTitle = document.getElementById('alarmBannerTitle');
+    const alarmBannerText = document.getElementById('alarmBannerText');
+    const btnDismissAlarm = document.getElementById('btnDismissAlarm');
+
+    btnTestAlarm.addEventListener('click', () => {
+      playGentleChime();
+      alarmBannerTitle.textContent = "Test Alarm: Gentle Dose Chime!";
+      alarmBannerText.textContent = "This is what your alarm sounds and looks like when it is time to take your scheduled medicines.";
+      doseAlarmBanner.classList.add('active');
+      showToast("Sounded dose chime!", "🔔");
+      speakText("Notice: Dose reminder test chime sounded. It is time to take your medicine.");
+    });
+
+    btnDismissAlarm.addEventListener('click', () => {
+      doseAlarmBanner.classList.remove('active');
+      if (isSpeaking) window.speechSynthesis.cancel();
+      showToast("Alarm dismissed");
+    });
+
+    // Real-Time Clock Reminder Interval (Checks every 30 seconds)
+    function startAlarmWatcher() {
+      if (alarmCheckInterval) clearInterval(alarmCheckInterval);
+      alarmCheckInterval = setInterval(checkPendingDoseAlarm, 30000);
+      // Run once immediately
+      checkPendingDoseAlarm();
+    }
+
+    function checkPendingDoseAlarm() {
+      const now = new Date();
+      // Format current time as HH:MM AM/PM
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
+      // Check if any untaken medicine matches current time
+      const match = medicines.find(m => !takenMap[m.id] && m.exactTime && m.exactTime.toLowerCase() === timeStr.toLowerCase());
+
+      if (match) {
+        playGentleChime();
+        alarmBannerTitle.textContent = `Time to take: ${match.name}`;
+        alarmBannerText.textContent = `${match.dosage} · Scheduled for ${match.exactTime} (${match.foodInstruction})`;
+        doseAlarmBanner.classList.add('active');
+        speakText(`Pill reminder: It is time to take ${match.name}, ${match.dosage}, ${match.foodInstruction}.`);
+      }
+    }
+
+    // Prescription Photo Upload & Live Preview
+    const fileInput = document.getElementById('prescriptionImage');
+    const previewBox = document.getElementById('imagePreviewBox');
+    const previewImg = document.getElementById('imagePreview');
+    const btnRemoveImg = document.getElementById('btnRemoveImage');
+    const dropZone = document.getElementById('dropZone');
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      handleFileSelected(file);
+    });
+
+    function handleFileSelected(file) {
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('Please select a valid image file (JPG, PNG, WEBP)', '⚠️');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Image size exceeds 5MB limit. Please choose a smaller photo.', '⚠️');
+        return;
+      }
+
+      selectedImageFile = file;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        previewImg.src = event.target.result;
+        previewBox.style.display = 'block';
+        showToast('Prescription photo loaded');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    btnRemoveImg.addEventListener('click', () => {
+      selectedImageFile = null;
+      fileInput.value = '';
+      previewBox.style.display = 'none';
+      previewImg.src = '';
+      showToast('Photo removed');
+    });
+
+    // Voice Input via Web Speech API (webkitSpeechRecognition)
+    const btnVoiceInput = document.getElementById('btnVoiceInput');
+    const voiceBtnText = document.getElementById('voiceBtnText');
+    const voiceStatusText = document.getElementById('voiceStatusText');
+    const prescriptionNotes = document.getElementById('prescriptionNotes');
+
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRec) {
+      speechRecognition = new SpeechRec();
+      speechRecognition.continuous = false;
+      speechRecognition.interimResults = true;
+      speechRecognition.lang = 'en-US';
+
+      speechRecognition.onstart = () => {
+        isListening = true;
+        btnVoiceInput.classList.add('listening');
+        voiceBtnText.textContent = 'Listening...';
+        voiceStatusText.textContent = 'Speaking now...';
+      };
+
+      speechRecognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          transcript += event.results[i][0].transcript;
+        }
+        prescriptionNotes.value = transcript;
+      };
+
+      speechRecognition.onerror = (event) => {
+        console.warn('Speech recognition error:', event.error);
+        voiceStatusText.textContent = 'Voice error: ' + event.error;
+        stopVoiceListening();
+      };
+
+      speechRecognition.onend = () => {
+        stopVoiceListening();
+      };
+    } else {
+      voiceStatusText.textContent = 'Voice recognition not supported on this browser';
+    }
+
+    function stopVoiceListening() {
+      isListening = false;
+      btnVoiceInput.classList.remove('listening');
+      voiceBtnText.textContent = 'Tap to Speak';
+      voiceStatusText.textContent = 'Voice input finished';
+    }
+
+    btnVoiceInput.addEventListener('click', () => {
+      if (!speechRecognition) {
+        showToast('Speech recognition not available on this device', '⚠️');
+        return;
+      }
+
+      if (isListening) {
+        speechRecognition.stop();
+      } else {
+        try {
+          speechRecognition.start();
+        } catch (err) {
+          console.warn('Failed to start speech recognition:', err);
+        }
+      }
+    });
+
+    // Analyze Prescription with Gemini AI
+    const btnAnalyze = document.getElementById('btnAnalyzePrescription');
+    const scanLoading = document.getElementById('scanLoading');
+    const scanLoadingText = document.getElementById('scanLoadingText');
+
+    btnAnalyze.addEventListener('click', async () => {
+      const text = prescriptionNotes.value.trim();
+      const hasImage = Boolean(selectedImageFile);
+
+      if (!hasImage && !text) {
+        showToast('Please upload a prescription photo or speak/type your medicine notes first.', '⚠️');
+        return;
+      }
+
+      const formData = new FormData();
+      if (hasImage) {
+        formData.append('image', selectedImageFile);
+      }
+      if (text) {
+        formData.append('text', text);
+      }
+
+      try {
+        btnAnalyze.disabled = true;
+        scanLoading.style.display = 'block';
+        scanLoadingText.textContent = 'Analyzing with Google Gemini Multimodal AI...';
+
+        const res = await fetch('/api/parse-prescription', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await res.json();
+
+        if (!res.ok || !result.success) {
+          throw new Error(result.error || 'Failed to parse prescription');
+        }
+
+        const extracted = result.data.medicines || [];
+        if (extracted.length === 0) {
+          showToast('No medicines identified. Please try a clearer photo or voice description.', '⚠️');
+          return;
+        }
+
+        // Add extracted medicines to existing schedule with unique IDs
+        extracted.forEach(item => {
+          medicines.push({
+            id: 'med-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+            name: item.name || 'Medicine',
+            dosage: item.dosage || 'As directed',
+            timeSlot: item.timeSlot || 'Morning',
+            exactTime: item.exactTime || '08:00 AM',
+            foodInstruction: item.foodInstruction || 'After Food',
+            plainPurpose: item.plainPurpose || 'Prescribed for your wellbeing.',
+            precautionTip: item.precautionTip || ''
+          });
+        });
+
+        saveMedicines();
+        renderApp();
+
+        // Update caregiver notes if provided
+        if (result.data.caregiverNote) {
+          document.getElementById('caregiverSpokenSummary').textContent = `"${result.data.caregiverNote}"`;
+        }
+
+        showToast(`Successfully added ${extracted.length} medicine${extracted.length > 1 ? 's' : ''} to your schedule!`);
+        speakText(`Successfully added ${extracted.length} new medicines to your schedule.`);
+
+        // Clear input state
+        selectedImageFile = null;
+        fileInput.value = '';
+        previewBox.style.display = 'none';
+        prescriptionNotes.value = '';
+
+      } catch (err) {
+        console.error('Prescription parsing failed:', err);
+        showToast(`Error: ${err.message}`, '❌');
+      } finally {
+        btnAnalyze.disabled = false;
+        scanLoading.style.display = 'none';
+      }
+    });
+
+    // Quick Manual Add
+    window.handleManualAdd = function() {
+      const name = document.getElementById('manualName').value.trim();
+      const dosage = document.getElementById('manualDosage').value.trim();
+      const timeSlot = document.getElementById('manualSlot').value;
+      const exactTime = document.getElementById('manualTime').value.trim();
+      const foodInstruction = document.getElementById('manualFood').value;
+      const plainPurpose = document.getElementById('manualPurpose').value.trim();
+
+      if (!name || !dosage || !exactTime) {
+        showToast('Please fill all required fields.', '⚠️');
+        return;
+      }
+
+      medicines.push({
+        id: 'med-' + Date.now(),
+        name,
+        dosage,
+        timeSlot,
+        exactTime,
+        foodInstruction,
+        plainPurpose: plainPurpose || 'Prescribed daily medicine.',
+        precautionTip: 'Take regularly as prescribed.'
+      });
+
+      saveMedicines();
+      renderApp();
+      showToast(`Added ${name} to ${timeSlot} schedule`);
+      document.getElementById('manualAddForm').reset();
+    };
+
+    // AI Safety & Care Check
+    const btnRunCareCheck = document.getElementById('btnRunCareCheck');
+    const careCheckLoading = document.getElementById('careCheckLoading');
+    const caregiverStatusPill = document.getElementById('caregiverStatusPill');
+    const caregiverAdviceList = document.getElementById('caregiverAdviceList');
+    const caregiverSpokenSummary = document.getElementById('caregiverSpokenSummary');
+    const btnPlaySpokenSummary = document.getElementById('btnPlaySpokenSummary');
+
+    let currentSpokenSummary = "Good day! You have medicines scheduled for morning, afternoon, evening, and night. Remember to take your doses with meals and plenty of water.";
+
+    btnRunCareCheck.addEventListener('click', async () => {
+      if (medicines.length === 0) {
+        showToast('Your schedule is empty. Add medicines first to run a safety check.', '⚠️');
+        return;
+      }
+
+      try {
+        btnRunCareCheck.disabled = true;
+        careCheckLoading.style.display = 'block';
+
+        const res = await fetch('/api/care-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ medicines })
+        });
+
+        const result = await res.json();
+        if (!res.ok || !result.success) {
+          throw new Error(result.error || 'Care check request failed');
+        }
+
+        const data = result.data;
+        caregiverStatusPill.textContent = `Schedule Status: ${data.overallStatus || 'Safe'}`;
+        currentSpokenSummary = data.spokenSummary || currentSpokenSummary;
+        caregiverSpokenSummary.textContent = `"${currentSpokenSummary}"`;
+
+        caregiverAdviceList.innerHTML = '';
+        const tips = data.safetyAdvice || [];
+        tips.forEach(tip => {
+          const li = document.createElement('li');
+          li.textContent = tip;
+          caregiverAdviceList.appendChild(li);
+        });
+
+        showToast('AI safety check complete!');
+        speakText(currentSpokenSummary);
+
+      } catch (err) {
+        console.error('Care check failed:', err);
+        showToast(`Error: ${err.message}`, '❌');
+      } finally {
+        btnRunCareCheck.disabled = false;
+        careCheckLoading.style.display = 'none';
+      }
+    });
+
+    btnPlaySpokenSummary.addEventListener('click', () => {
+      speakText(currentSpokenSummary);
+    });
+
+    // Copy Caregiver WhatsApp Report
+    const btnCopyWhatsApp = document.getElementById('btnCopyWhatsApp');
+
+    btnCopyWhatsApp.addEventListener('click', async () => {
+      const todayStr = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+      const total = medicines.length;
+      let takenCount = 0;
+      const takenItems = [];
+      const pendingItems = [];
+
+      medicines.forEach(m => {
+        if (takenMap[m.id]) {
+          takenCount++;
+          takenItems.push(`  • ${m.name} (${m.dosage}) - Taken at ${takenMap[m.id]}`);
+        } else {
+          pendingItems.push(`  • ${m.name} (${m.dosage}) - ${m.timeSlot} [${m.exactTime}, ${m.foodInstruction}]`);
+        }
+      });
+
+      const percent = total > 0 ? Math.round((takenCount / total) * 100) : 0;
+
+      let msg = `🏥 *MediTrack Senior Care Report — ${todayStr}*\n\n`;
+      msg += `📊 *Daily Adherence:* ${takenCount}/${total} doses taken (${percent}%)\n\n`;
+
+      msg += `✅ *COMPLETED DOSES:*\n`;
+      if (takenItems.length > 0) {
+        msg += takenItems.join('\n') + '\n\n';
+      } else {
+        msg += `  (No doses marked as taken yet today)\n\n`;
+      }
+
+      msg += `⏳ *PENDING DOSES:*\n`;
+      if (pendingItems.length > 0) {
+        msg += pendingItems.join('\n') + '\n\n';
+      } else {
+        msg += `  🎉 All doses completed for today!\n\n`;
+      }
+
+      msg += `💡 *Caregiver Note:* Generated automatically via MediTrack Senior Care Console.`;
+
+      try {
+        await navigator.clipboard.writeText(msg);
+        showToast('WhatsApp report copied to clipboard!', '📋');
+      } catch (err) {
+        // Fallback for older browsers or restricted permissions
+        const textarea = document.createElement('textarea');
+        textarea.value = msg;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('WhatsApp report copied to clipboard!', '📋');
+      }
+    });
+
+    // Initialize application on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      renderApp();
+      startAlarmWatcher();
+    });
+  </script>
+</body>
+</html>

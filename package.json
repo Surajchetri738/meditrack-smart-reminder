@@ -1,0 +1,29 @@
+{
+  "name": "meditrack-smart-reminder",
+  "version": "1.0.0",
+  "description": "MediTrack — Smart Medicine Reminder for Seniors & Caregivers (PS02 Healthcare)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@google/genai": "^3.6.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "healthcare",
+    "accessibility",
+    "medicine-reminder",
+    "gemini",
+    "multimodal",
+    "elderly-care"
+  ],
+  "author": "",
+  "license": "ISC"
+}
